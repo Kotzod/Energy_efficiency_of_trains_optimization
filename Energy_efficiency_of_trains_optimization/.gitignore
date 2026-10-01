@@ -1,0 +1,14 @@
+.venv
+venv
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.vscode/
+.env
+env
+*.json
+# Ignore large data files - use local copies
+data/raw/digitraffic_track_validator.json
+data/raw/digitraffic_corridor_winter.json
+*.clinerules

@@ -1,0 +1,86 @@
+.legend {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  bottom: auto;
+  left: auto;
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 12px 16px;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  font-family: sans-serif;
+  font-size: 13px;
+  z-index: 100;
+  min-width: 220px;
+  color: #333;
+}
+
+.legend-section {
+  margin-bottom: 16px;
+}
+
+.legend-section:last-child {
+  margin-bottom: 0;
+}
+
+.legend-section h4 {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #555;
+  font-size: 12px;
+}
+
+.heatmap-gradient {
+  height: 12px;
+  width: 100%;
+  background: linear-gradient(
+    to right,
+    #0000ff,
+    #00ffff,
+    #00ff00,
+    #ffff00,
+    #ff0000
+  );
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+.gradient-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #666;
+}
+
+.weather-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.weather-symbol {
+  font-size: 20px;
+}
+
+.weather-name {
+  color: #555;
+}
+
+.train-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.train-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.train-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid #999;
+}

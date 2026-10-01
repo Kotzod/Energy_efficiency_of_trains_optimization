@@ -1,0 +1,101 @@
+.sidebar {
+  width: 260px;
+  height: 100%;
+  background-color: #151b2e;
+  border-right: 1px solid #2a3348;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #e0e0e0;
+}
+
+.sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid #2a3348;
+  flex-shrink: 0;
+}
+
+.sidebar-header h2 {
+  margin: 0;
+  color: #f0f0f0;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.metrics-empty {
+  margin: 0;
+  color: #6b7690;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.metric-headline {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  margin-bottom: 14px;
+  background-color: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(14, 165, 233, 0.35);
+  border-radius: 6px;
+}
+
+.metric-headline-label {
+  color: #8fa3c8;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.metric-headline-value {
+  margin-top: 2px;
+  color: #38bdf8;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  font-size: 13px;
+}
+
+.metric-label {
+  color: #b0b0b0;
+}
+
+.metric-value {
+  flex-shrink: 0;
+  color: #f0f0f0;
+  font-weight: 600;
+  text-align: right;
+}
+
+.sidebar-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+  background: #151b2e;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+  background: #404b63;
+  border-radius: 4px;
+}
+
+@media (max-width: 800px) {
+  .sidebar {
+    width: 220px;
+  }
+}

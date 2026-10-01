@@ -1,0 +1,34 @@
+.map-view {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  min-height: 320px;
+  background-color: #101a2a;
+  overflow: hidden;
+}
+
+.map-view > div {
+  position: absolute !important;
+  inset: 0 !important;
+}
+
+.map-view .maplibregl-map {
+  position: absolute;
+  inset: 0;
+}
+
+.deck-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.tooltip {
+  position: absolute;
+  padding: 8px 12px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-radius: 4px;
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 10;
+}

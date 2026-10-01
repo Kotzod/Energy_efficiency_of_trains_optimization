@@ -1,0 +1,68 @@
+# =========================
+# CORE SIMULATION
+# =========================
+mesa==3.5.1
+simpy==4.1.2
+networkx==3.6.1
+numpy==2.4.6
+scipy==1.17.1
+
+# =========================
+# DATA PROCESSING
+# =========================
+pandas==3.0.3
+pyyaml==6.0.3
+orjson==3.11.9
+
+# =========================
+# ANALYTICS & METRICS
+# =========================
+scikit-learn==1.8.0
+statsmodels==0.14.6
+
+# =========================
+# VISUALIZATION
+# =========================
+matplotlib==3.10.9
+plotly==6.7.0
+pyvis>=0.3.2
+
+# =========================
+# DATA VALIDATION
+# =========================
+pydantic==2.13.4
+
+# =========================
+# FRONTEND / UI
+# =========================
+streamlit==1.57.0
+
+# =========================
+# BACKEND / API
+# =========================
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+
+# =========================
+# NLP PROMPT PARSING
+# =========================
+google-genai==2.7.0
+# NLP packages (optional) moved to requirements-nlp.txt
+
+# =========================
+# RL / AI (OPTIONAL)
+# =========================
+# RL / AI packages (optional) moved to requirements-rl.txt
+
+# =========================
+# UTILITIES
+# =========================
+tqdm==4.67.3
+python-dotenv==1.2.2
+rich==15.0.0
+
+# =========================
+# TESTING
+# =========================
+pytest==9.0.3
+pytest-cov==7.1.0

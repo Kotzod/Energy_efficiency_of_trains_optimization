@@ -1,0 +1,55 @@
+.control-bar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 16px;
+  background-color: #1a1a1a;
+  border-bottom: 1px solid #404040;
+  flex-wrap: wrap;
+}
+
+.button-group {
+  display: flex;
+  gap: 8px;
+}
+
+.button-group button {
+  padding: 8px 16px;
+  font-size: 14px;
+  min-width: 80px;
+}
+
+.button-group button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.speed-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.speed-control label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #e0e0e0;
+  white-space: nowrap;
+}
+
+.slider {
+  width: 150px;
+  cursor: pointer;
+}
+
+.speed-value {
+  font-size: 13px;
+  min-width: 60px;
+  text-align: right;
+  color: #b0b0b0;
+}
+
+.tick-display {
+  font-size: 13px;
+  color: #b0b0b0;
+}
