@@ -57,6 +57,7 @@ export interface ViewState {
   longitude: number;
   zoom: number;
   pitch: number;
+  bearing?: number;
 }
 
 export interface Infrastructure {

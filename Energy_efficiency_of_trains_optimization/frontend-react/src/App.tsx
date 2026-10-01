@@ -50,6 +50,10 @@ const App: React.FC = () => {
   const [controllerMode, setControllerMode] = useState<
     "rule_based" | "mpc" | "ai"
   >("rule_based");
+  const handleTrainSelect = useCallback(
+    (train: Train) => setSelectedTrainId(train.trainId),
+    [],
+  );
 
   // Refs
   const wsRef = useRef<WebSocket | null>(null);
@@ -340,7 +344,7 @@ const App: React.FC = () => {
               trains={trains}
               status={status}
               metrics={metrics}
-              onTrainSelect={(train) => setSelectedTrainId(train.trainId)}
+              onTrainSelect={handleTrainSelect}
             />
             <Legend weather={status?.weather} />
           </div>

@@ -21,11 +21,17 @@ import "maplibre-gl/dist/maplibre-gl.css";
 const MAP_STYLE =
   "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
 
+// Never depth-test against anything: draw order alone decides stacking,
+// so tracks/stations/trains can't be hidden when pitching or rotating.
+// (deck.gl 9.x. If you're on deck.gl 8.x use { depthTest: false } instead.)
+const ALWAYS_ON_TOP: any = { depthCompare: "always" };
+
 function DeckGLOverlay(props: DeckProps) {
+  // interleaved: false -> deck.gl renders on its own canvas ABOVE the basemap
   const overlay = useControl<MapboxOverlay>(
-    () => new MapboxOverlay({ ...props, interleaved: true }),
+    () => new MapboxOverlay({ ...props, interleaved: false }),
   );
-  overlay.setProps({ ...props, interleaved: true });
+  overlay.setProps({ ...props, interleaved: false });
   return null;
 }
 
@@ -55,57 +61,10 @@ const MapView: React.FC<MapViewProps> = ({
     },
   );
 
-  // Build layers
-  const layers = useMemo(() => {
-    if (!infrastructure) return [];
+  // Heatmap (radio towers) - bottom of the stack
+  const heatmapLayer = useMemo(() => {
+    if (!infrastructure) return null;
 
-    const layersArray = [];
-
-    // Track paths layer
-    if (infrastructure.trackPaths.length > 0) {
-      layersArray.push(
-        new PathLayer({
-          id: "track-layer",
-          data: infrastructure.trackPaths,
-          getPath: (d: any) => d.path,
-          getColor: (d: any) => {
-            const net = metrics?.energyByEdge?.[d.edgeKey]?.netKwh ?? 0;
-            if (net > 100) return [220, 38, 38];
-            if (net > 25) return [234, 179, 8];
-            return [34, 197, 94];
-          },
-          widthScale: 15,
-          widthMinPixels: 3,
-          pickable: false,
-        }),
-      );
-    }
-
-    // Stations layer
-    if (infrastructure.stations.length > 0) {
-      layersArray.push(
-        new ScatterplotLayer({
-          id: "station-layer",
-          data: infrastructure.stations,
-          getPosition: (d: any) => d.position,
-          getFillColor: [186, 230, 253],
-          getRadius: 400,
-          radiusMinPixels: 4,
-          pickable: true,
-          autoHighlight: true,
-          onHover: (info: any) => {
-            if (info.object) {
-              console.log("Hovering station:", info.object.name);
-            }
-          },
-          onClick: (info: any) => {
-            if (info.object) onTrainSelect?.(info.object as Train);
-          },
-        }),
-      );
-    }
-
-    // Heatmap layer (only for operational towers)
     const operationalTowerIds = new Set(
       (status?.towers || [])
         .filter((t: any) => t.operational)
@@ -113,73 +72,111 @@ const MapView: React.FC<MapViewProps> = ({
     );
 
     const heatmapPoints: any[] = [];
-    if (infrastructure.towers.length > 0) {
-      infrastructure.towers.forEach((tower) => {
-        if (operationalTowerIds.has(tower.towerId)) {
-          heatmapPoints.push(...tower.heatmapPoints);
-        }
-      });
-    }
+    infrastructure.towers.forEach((tower) => {
+      if (operationalTowerIds.has(tower.towerId)) {
+        heatmapPoints.push(...tower.heatmapPoints);
+      }
+    });
 
-    if (heatmapPoints.length > 0) {
-      layersArray.push(
-        new HeatmapLayer<any>({
-          id: "heatmap-layer",
-          data: heatmapPoints,
-          getPosition: (d: any) => d.position,
-          getWeight: (d: any) => d.weight,
-          radiusPixels: 70,
-          intensity: 1.0,
-          threshold: 0.02,
-          aggregation: "SUM",
-          colorRange: [
-            [0, 0, 255],
-            [0, 255, 255],
-            [0, 255, 0],
-            [255, 255, 0],
-            [255, 0, 0],
-          ],
-          pickable: false,
-        }),
-      );
-    }
+    if (heatmapPoints.length === 0) return null;
 
-    // Trains layer
-    if (trains.length > 0) {
-      const trainData = trains.map((train) => ({
-        ...train,
-        color: train.trainType === "freight" ? [245, 158, 11] : [59, 130, 246],
-        radius: train.trainType === "freight" ? 900 : 750,
-      }));
+    return new HeatmapLayer<any>({
+      id: "heatmap-layer",
+      data: heatmapPoints,
+      getPosition: (d: any) => d.position,
+      getWeight: (d: any) => d.weight,
+      radiusPixels: 70,
+      intensity: 1.0,
+      threshold: 0.02,
+      aggregation: "SUM",
+      colorRange: [
+        [0, 0, 255],
+        [0, 255, 255],
+        [0, 255, 0],
+        [255, 255, 0],
+        [255, 0, 0],
+      ],
+      pickable: false,
+    });
+  }, [infrastructure, status?.towers]);
 
-      layersArray.push(
-        new ScatterplotLayer({
-          id: "train-layer",
-          data: trainData,
-          getPosition: (d: any) => d.position,
-          getFillColor: (d: any) => d.color,
-          getLineColor: [255, 255, 255],
-          lineWidthMinPixels: 1.5,
-          getRadius: (d: any) => d.radius,
-          radiusMinPixels: 7,
-          stroked: true,
-          filled: true,
-          pickable: true,
-          autoHighlight: true,
-          onHover: (info: any) => {
-            if (info.object) {
-              const train = info.object as Train;
-              console.log(
-                `Train ${train.trainId}: ${train.state} at ${train.speedKmh.toFixed(1)} km/h`,
-              );
-            }
-          },
-        }),
-      );
-    }
+  // Tracks
+  const trackLayer = useMemo(() => {
+    if (!infrastructure || infrastructure.trackPaths.length === 0) return null;
 
-    return layersArray;
-  }, [infrastructure, trains, status, metrics]);
+    return new PathLayer({
+      id: "track-layer",
+      data: infrastructure.trackPaths,
+      getPath: (d: any) => d.path,
+      getColor: (d: any) => {
+        const net = metrics?.energyByEdge?.[d.edgeKey]?.netKwh ?? 0;
+        if (net > 100) return [220, 38, 38];
+        if (net > 25) return [234, 179, 8];
+        return [34, 197, 94];
+      },
+      getWidth: 1,
+      widthScale: 15,
+      widthMinPixels: 3,
+      capRounded: true,
+      jointRounded: true,
+      pickable: false,
+      parameters: ALWAYS_ON_TOP,
+      // without this, colours never refresh when metrics change
+      updateTriggers: { getColor: [metrics?.energyByEdge] },
+    });
+  }, [infrastructure, metrics?.energyByEdge]);
+
+  // Stations
+  const stationLayer = useMemo(() => {
+    if (!infrastructure || infrastructure.stations.length === 0) return null;
+
+    return new ScatterplotLayer({
+      id: "station-layer",
+      data: infrastructure.stations,
+      getPosition: (d: any) => d.position,
+      getFillColor: [186, 230, 253],
+      getLineColor: [15, 23, 42],
+      getRadius: 400,
+      radiusMinPixels: 5,
+      lineWidthMinPixels: 1.5,
+      stroked: true,
+      filled: true,
+      pickable: true,
+      autoHighlight: true,
+      parameters: ALWAYS_ON_TOP,
+    });
+  }, [infrastructure]);
+
+  // Trains - very top. Rebuilt every animation frame, so keep it cheap.
+  const trainLayer = useMemo(() => {
+    if (trains.length === 0) return null;
+
+    return new ScatterplotLayer<Train>({
+      id: "train-layer",
+      data: trains,
+      getPosition: (d) => d.position,
+      getFillColor: (d) =>
+        d.trainType === "freight" ? [245, 158, 11] : [59, 130, 246],
+      getLineColor: [255, 255, 255],
+      getRadius: (d) => (d.trainType === "freight" ? 900 : 750),
+      lineWidthMinPixels: 1.5,
+      radiusMinPixels: 7,
+      stroked: true,
+      filled: true,
+      pickable: true,
+      autoHighlight: true,
+      parameters: ALWAYS_ON_TOP,
+      onClick: (info: any) => {
+        if (info.object) onTrainSelect?.(info.object as Train);
+      },
+    });
+  }, [trains, onTrainSelect]);
+
+  // Draw order = array order: later items are drawn on top
+  const layers = useMemo(
+    () => [heatmapLayer, trackLayer, stationLayer, trainLayer].filter(Boolean),
+    [heatmapLayer, trackLayer, stationLayer, trainLayer],
+  );
 
   const handleViewStateChange = (vs: any) => {
     setViewState(vs.viewState);
@@ -194,19 +191,14 @@ const MapView: React.FC<MapViewProps> = ({
         longitude={viewState.longitude}
         zoom={viewState.zoom}
         pitch={viewState.pitch}
+        bearing={(viewState as any).bearing ?? 0}
         onMove={(event) => handleViewStateChange(event)}
         reuseMaps
       >
         <DeckGLOverlay
-          layers={layers}
+          layers={layers as any}
           getTooltip={({ object }: any) => {
             if (!object) return null;
-            if (object.name) {
-              return {
-                html: `<div><strong>${object.name}</strong></div>`,
-                style: { backgroundColor: "rgba(0, 0, 0, 0.8)", color: "#fff" },
-              };
-            }
             if (object.trainId) {
               return {
                 html: `<div>
@@ -215,6 +207,12 @@ const MapView: React.FC<MapViewProps> = ({
                   State: ${object.state}<br/>
                   Speed: ${object.speedKmh.toFixed(1)} km/h
                 </div>`,
+                style: { backgroundColor: "rgba(0, 0, 0, 0.8)", color: "#fff" },
+              };
+            }
+            if (object.name) {
+              return {
+                html: `<div><strong>${object.name}</strong></div>`,
                 style: { backgroundColor: "rgba(0, 0, 0, 0.8)", color: "#fff" },
               };
             }
